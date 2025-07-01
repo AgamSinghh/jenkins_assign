@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        APP_NAME = 'jenkins_assignment'
+        APP_NAME = 'jenkins-assignment'
         HOST_PORT= '3000'
         CONTAINER_PORT = '3000'
     }
@@ -43,10 +43,6 @@ pipeline {
         }
     }
     post {
-        always {
-            echo "Cleaning the untagged images"
-            sh 'docker image prune -f'
-        }
         success {
             echo "Build and deployment successful"
         }
