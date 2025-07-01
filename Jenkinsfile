@@ -1,6 +1,8 @@
 pipeline {
-    agent docker {
-        image 'node:22'    
+    agent {
+        docker {
+            image 'node: 22'
+        }
     }
 
     environment {
@@ -51,6 +53,6 @@ pipeline {
         failure {
             echo "Build or deployment failed"
         }
-        
+
     }
 }
