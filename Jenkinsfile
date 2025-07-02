@@ -1,54 +1,53 @@
 pipeline {
-    agent {
-        docker {
-            image 'node: 22'
-        }
-    }
+    agent any
 
     environment {
-        APP_NAME = 'jenkins-assignment'
-        HOST_PORT= '3000'
+        IMAGE_NAME = 'agam/jenkinsassignment'
+        CONTAINER_NAME = 'jenkinsassignment'
+        HOST_PORT = '3000'
         CONTAINER_PORT = '3000'
     }
 
     stages {
         stage('Clone repository') {
             steps {
-                echo "Cloning the repoo"
-                git url: 'https://github.com/AgamSinghh/jenkins_assign.git' , branch: 'main'
+                git url: 'https://github.com/AgamSinghh/jenkins_assign.git', branch: 'main'
             }
         }
 
-        stage('Installing depened..') {
+        stage('Install dependencies') {
             steps {
-                echo "Installing dependencies"
                 sh 'npm install'
             }
         }
 
-        stage('Docker Build') {
+        stage('Build Docker image') {
             steps {
-                echo "Biulding the Docker image"
-                sh'docker build -t $APP_NAME:latest .'
+                sh 'docker build -t $IMAGE_NAME:latest .'
             }
         }
-        stage('Deploying the containers') {
-            steps{
-                echo"Deploying the containers"
+
+        stage('Deploy container') {
+            steps {
                 sh '''
-                docker rm -f $APP_NAME || true
-                docker run -d -p $HOST_PORT:$CONTAINER_PORT --name $APP_NAME $APP_NAME:latest
+                    docker rm -f $CONTAINER_NAME || true
+                    docker run -d -p $HOST_PORT:$CONTAINER_PORT --name $CONTAINER_NAME $IMAGE_NAME:latest
                 '''
             }
         }
     }
+
     post {
+        always {
+            script {
+                sh 'docker image prune -f'
+            }
+        }
         success {
-            echo "Build and deployment successful"
+            echo "Build & deployment successful"
         }
         failure {
             echo "Build or deployment failed"
         }
-
     }
 }
