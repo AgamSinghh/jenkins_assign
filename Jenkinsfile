@@ -2,59 +2,59 @@ pipeline {
     agent {
         docker {
             image 'node:22-alpine'
+            args '-u root:root -v /var/run/docker.sock:/var/run/docker.sock'
         }
     }
 
     environment {
-        IMAGE_NAME = 'jenkins_assignment'
-        CONTAINER_NAME = 'jenkins_assignment'
-        HOST_PORT = '3000'
-        CONTAINER_PORT = '3000'
+        GIT_REPO = 'https://github.com/AgamSinghh/jenkins_assign.git'
+        IMAGE_NAME = 'jenkinsassign'
+        TAG = 'latest'
     }
 
     stages {
+
         stage('Clone Repository') {
             steps {
-                echo "Cloning the repository..."
-                git url: 'https://github.com/AgamSinghh/jenkins_assign.git', branch: 'main'
+                echo 'Cloning repository...'
+                sh 'apk add git' 
+                sh 'rm -rf jenkins_assign && git clone $GIT_REPO'
+                dir('jenkins_assign') {
+                    sh 'ls -la'
+                }
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo "Installing npm dependencies..."
-                sh 'npm install'
+                dir('jenkins_assign') {
+                    echo 'Installing npm dependencies...'
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
-                sh 'docker build -t $IMAGE_NAME:latest .'
+                dir('jenkins_assign') {
+                    echo 'Building Docker image...'
+                    sh 'docker build -t $IMAGE_NAME:$TAG .'
+                }
             }
         }
 
-        stage('Deploy Container') {
+        stage('Run Docker Container') {
             steps {
-                echo "Deploying the Docker container..."
-                sh '''
-                    docker rm -f $CONTAINER_NAME || true
-                    docker run -d -p $HOST_PORT:$CONTAINER_PORT --name $CONTAINER_NAME $IMAGE_NAME:latest
-                '''
+                echo 'Running container...'
+                sh 'docker run -d -p 3000:3000 --name running_app $IMAGE_NAME:$TAG'
             }
         }
     }
 
     post {
         always {
-            echo "Cleaning up untagged Docker images..."
-            sh 'docker image prune -f'
-        }
-        success {
-            echo "deployment completed successfully."
-        }
-        failure {
-            echo " dployment failed."
+            echo 'Cleaning up...'
+            sh 'docker image prune -f || true'
         }
     }
 }
