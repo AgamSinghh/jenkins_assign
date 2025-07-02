@@ -1,34 +1,42 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:22-alpine'
+        }
+    }
 
     environment {
-        IMAGE_NAME = 'agam/jenkinsassignment'
-        CONTAINER_NAME = 'jenkinsassignment'
+        IMAGE_NAME = 'jenkins_assignment'
+        CONTAINER_NAME = 'jenkins_assignment'
         HOST_PORT = '3000'
         CONTAINER_PORT = '3000'
     }
 
     stages {
-        stage('Clone repository') {
+        stage('Clone Repository') {
             steps {
+                echo "Cloning the repository..."
                 git url: 'https://github.com/AgamSinghh/jenkins_assign.git', branch: 'main'
             }
         }
 
-        stage('Install dependencies') {
+        stage('Install Dependencies') {
             steps {
+                echo "Installing npm dependencies..."
                 sh 'npm install'
             }
         }
 
-        stage('Build Docker image') {
+        stage('Build Docker Image') {
             steps {
+                echo "Building Docker image..."
                 sh 'docker build -t $IMAGE_NAME:latest .'
             }
         }
 
-        stage('Deploy container') {
+        stage('Deploy Container') {
             steps {
+                echo "Deploying the Docker container..."
                 sh '''
                     docker rm -f $CONTAINER_NAME || true
                     docker run -d -p $HOST_PORT:$CONTAINER_PORT --name $CONTAINER_NAME $IMAGE_NAME:latest
@@ -39,15 +47,14 @@ pipeline {
 
     post {
         always {
-            script {
-                sh 'docker image prune -f'
-            }
+            echo "Cleaning up untagged Docker images..."
+            sh 'docker image prune -f'
         }
         success {
-            echo "Build & deployment successful"
+            echo "deployment completed successfully."
         }
         failure {
-            echo "Build or deployment failed"
+            echo " dployment failed."
         }
     }
 }
