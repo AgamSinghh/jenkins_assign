@@ -19,41 +19,40 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 echo 'Cloning repository...'
-                git branch: 'main', url: "$GIT_REPO"
-                echo "Repository clones successfully"
-
+                git branch: 'main', url: "${GIT_REPO}"
+                echo "Repository cloned successfully"
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
-                echo "Dependencies done"
+                echo "Dependencies installed"
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$TAG .'
-                echo "Build done"
+                echo "Building Docker image..."
+                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
+                echo "Docker image built successfully"
             }
         }
 
         stage('Run Docker Container') {
             steps {
-                sh '''
-
-                docker rm -f $CONTAINER_NAME || true
-                docker run -d --name $CONTAINER_NAME -p 3000:3000 $IMAGE_NAME
-                '''
-                echo "Container is running"
+                sh """
+                docker rm -f ${CONTAINER_NAME} || true
+                docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}:${TAG}
+                """
+                echo "Docker container is running"
             }
         }
     }
 
     post {
         success {
-            echo "Pipelines completed successfully"
+            echo "Pipeline completed successfully"
         }
         failure {
             echo "Pipeline failed"
