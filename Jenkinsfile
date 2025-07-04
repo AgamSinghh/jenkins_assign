@@ -31,7 +31,7 @@ pipeline {
         stage('Run the App') {
             steps {
                 echo '🚀 Starting the app...'
-                sh 'npm start'
+                sh ' npm start &'
                 echo '✅ App started on http://localhost:3000'
             }
         }
