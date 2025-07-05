@@ -18,13 +18,13 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                echo 'Installing dependencies...'
-                sh 'npm install'
-                echo 'Dependencies installed'
-            }
-        }
+        // stage('Install Dependencies') {
+        //     steps {
+        //         echo 'Installing dependencies...'
+        //         sh 'npm install'
+        //         echo 'Dependencies installed'
+        //     }
+        // }
 
         stage('Build Docker Image for App') {
             steps {
