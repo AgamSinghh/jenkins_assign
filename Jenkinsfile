@@ -18,13 +18,7 @@ pipeline {
             }
         }
 
-        // stage('Install Dependencies') {
-        //     steps {
-        //         echo 'Installing dependencies...'
-        //         sh 'npm install'
-        //         echo 'Dependencies installed'
-        //     }
-        // }
+        
 
         stage('Build Docker Image for App') {
             steps {
@@ -46,6 +40,10 @@ pipeline {
     }
 
     post {
+        always{
+            echo"cleaning up the images"
+            sh 'docker image prune -f'
+        }
         success {
             echo 'Pipeline completed successfully.'
         }
