@@ -19,33 +19,45 @@ pipeline {
             steps {
                 echo '📥 Cloning repository...'
                 git branch: 'main', url: "${GIT_REPO}"
-                echo '✅ Repository cloned successfully'
+                echo '✅ Cloned'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo 'Installing...'
+                echo '📦 Installing dependencies...'
                 sh 'npm install'
-                echo 'Installed'
+                echo '✅ Dependencies installed'
             }
         }
 
-        stage('Run the App') {
+        stage('Build Docker Image for App') {
+            agent any  // 🧠 runs on main Jenkins agent where Docker is installed
             steps {
-                echo '🚀 Starting the app...'
-                sh ' npm start &'
-                echo '✅ App started on http://localhost:3000'
+                echo '🐳 Building Docker image outside container agent...'
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Run App in Container') {
+            agent any
+            steps {
+                echo '🚀 Running Docker container outside agent container...'
+                sh '''
+                    docker rm -f $CONTAINER_NAME || true
+                    docker run -d --name $CONTAINER_NAME -p $PORT:3000 $IMAGE_NAME
+                '''
+                echo "✅ App is running at http://localhost:$PORT"
             }
         }
     }
 
     post {
         success {
-            echo '🎉 Pipeline completed successfully'
+            echo '🎉 Pipeline completed with Docker agent + external container run!'
         }
         failure {
-            echo 'Failed'
+            echo '❌ Pipeline failed'
         }
     }
 }
